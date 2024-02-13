@@ -42,5 +42,11 @@ init().then(_ => {
   drawWorld();
   drawSnake();
 
-  console.log(world.snake_head_idx());
+  setInterval(() => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawWorld();
+    drawSnake();
+    console.log("Updating!");
+  }, 100);
+
 })
