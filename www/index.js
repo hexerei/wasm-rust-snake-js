@@ -1,7 +1,13 @@
 async function init() {
 
-    // js functions exported to wasm
+    // create wasm memory page
+    const memory = new WebAssembly.Memory({initial: 1})
+
+    // js objects exported to wasm
     const importObject = {
+        js: {
+            mem: memory
+        },
         console: {
           log: () => {
             console.log("Just logging something!");
@@ -23,8 +29,7 @@ async function init() {
     console.log(result);
 
     // test wasm memory
-    const wasmMemory = wasm.instance.exports.mem;
-    const uint8Array = new Uint8Array(wasmMemory.buffer, 0, 2);
+    const uint8Array = new Uint8Array(memory.buffer, 0, 2);
     const hiText = new TextDecoder().decode(uint8Array);
     console.log(hiText);
 }
