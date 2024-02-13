@@ -1,5 +1,6 @@
-import init, { greet } from "snake";
+import init, { World } from "snake";
 
 init().then(_ => {
-  greet("Daniel");
+  const world = World.new();
+  console.log(world.width);
 })
