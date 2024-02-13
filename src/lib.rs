@@ -14,7 +14,7 @@ pub struct World {
 impl World {
     pub fn new() -> World {
         World {
-            width: 8
+            width: 16
         }
     }
     pub fn width(&self) -> usize {
