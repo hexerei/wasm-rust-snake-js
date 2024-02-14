@@ -5,10 +5,10 @@ use wee_alloc::WeeAlloc;
 #[global_allocator]
 static ALLOC: WeeAlloc = WeeAlloc::INIT;
 
-#[wasm_bindgen(module = "/www/utils/date.js")]
-extern {
-    fn now() -> usize;
-}
+// #[wasm_bindgen(module = "/www/utils/date.js")]
+// extern {
+//     fn now() -> usize;
+// }
 #[wasm_bindgen(module = "/www/utils/rnd.js")]
 extern {
     fn rnd(max: usize) -> usize;
@@ -84,8 +84,12 @@ impl World {
         }
 
         if self.reward_cell == self.snake_head_idx() {
+            if self.snake_length() < self.size {
+                self.reward_cell =  World::generate_reward_cell(self.size, &self.snake.body);
+            } else {
+                self.reward_cell =  1000;
+            }
             self.snake.body.push(SnakeCell(self.snake.body[1].0));
-            self.reward_cell =  World::generate_reward_cell(self.size, &self.snake.body);
         }
     }
 
