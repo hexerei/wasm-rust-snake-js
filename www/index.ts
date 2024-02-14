@@ -1,10 +1,10 @@
-import init, { World, Direction } from "snake";
+import init, { World, Direction, GameState } from "snake";
 import { rnd } from "./utils/rnd";
 
 init().then(wasm => {
 
   const CELL_SIZE = 20;
-  const WORLD_WIDTH = 4;
+  const WORLD_WIDTH = 8;
   const SNAKE_DIR = Direction.Right;
   const snakeSpawnIdx = rnd(WORLD_WIDTH * WORLD_WIDTH);
 
@@ -24,6 +24,7 @@ init().then(wasm => {
   });
 
   const gameStateLabel = document.getElementById("game-state");
+  const gamePointsLabel = document.getElementById("game-points");
 
 
   const canvas = <HTMLCanvasElement> document.getElementById("snake-canvas");
@@ -108,6 +109,7 @@ init().then(wasm => {
 
   function drawGameState() {
     gameStateLabel.textContent = world.game_state_text();
+    gamePointsLabel.textContent = world.points().toString();
   }
 
   function paint() {
@@ -118,14 +120,19 @@ init().then(wasm => {
   }
 
   function play() {
-    const fps = 3;
-    setTimeout(() => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      world.step();
-      paint();
-      // takes a callback to be invoked before next repaint
-      requestAnimationFrame(play);
-    }, 1000 / fps);
+    const state = world.game_state();
+    if (state == GameState.Won || state == GameState.Lost) {
+      gameControlBtn.textContent = "Play Again";
+    } else {
+      const fps = 3;
+      setTimeout(() => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        world.step();
+        paint();
+        // takes a callback to be invoked before next repaint
+        requestAnimationFrame(play);
+      }, 1000 / fps);  
+    }
   }
 
   paint();
