@@ -94,22 +94,14 @@ init().then(wasm => {
     )
 
     ctx.beginPath();
-    let head_col: number = 0;
-    let head_row: number = 0;
-    ctx.fillStyle = "#555555";
-    snakeCells.forEach( (cellIdx, i) => {
+    snakeCells
+      .filter((c, i) => !(i > 0 && c === snakeCells[0]))
+      .forEach( (cellIdx, i) => {
       const col = cellIdx % worldWidth;
       const row = Math.floor(cellIdx / worldWidth);
-      if (i < 1) {
-        head_col = col;
-        head_row = row;
-      } else {
-        ctx.fillRect(col * CELL_SIZE, row * CELL_SIZE, CELL_SIZE, CELL_SIZE);
-      }
+      ctx.fillStyle = (i < 1) ? "#7878db" : "#333333";
+      ctx.fillRect(col * CELL_SIZE, row * CELL_SIZE, CELL_SIZE, CELL_SIZE);
     });
-    // draw head last so it is on top
-    ctx.fillStyle = "#7878db";
-    ctx.fillRect(head_col * CELL_SIZE, head_row * CELL_SIZE, CELL_SIZE, CELL_SIZE);
 
     ctx.stroke();
   }
