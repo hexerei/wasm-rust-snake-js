@@ -23,6 +23,13 @@ pub enum Direction {
     Left
 }
 
+#[wasm_bindgen]
+pub enum GameState {
+    Won,
+    Lost,
+    Playing,
+}
+
 #[derive(Clone, Copy, PartialEq)]
 pub struct SnakeCell(usize);
 
@@ -51,7 +58,8 @@ pub struct World {
     size: usize,
     snake: Snake,
     next_cell: Option<SnakeCell>,
-    reward_cell: usize
+    reward_cell: usize,
+    state: Option<GameState>,
 }
 
 #[wasm_bindgen]
@@ -65,32 +73,36 @@ impl World {
             reward_cell: World::generate_reward_cell(size, &snake.body),
             snake,
             next_cell: None,
+            state: None,
         }
     }
 
     pub fn step(&mut self) {
-        let tmp = self.snake.body.clone();
-        let len = tmp.len();
-        self.snake.body[0] = match self.next_cell {
-            Some(cell) => {
-                self.next_cell = None;
-                cell
+
+        match self.state {
+            Some(GameState::Playing) => {
+                let tmp = self.snake.body.clone();
+                let len = tmp.len();
+                self.snake.body[0] = match self.next_cell {
+                    Some(cell) => {
+                        self.next_cell = None;
+                        cell
+                    },
+                    None => self.gen_next_snake_cell()
+                };
+        
+                for i in 1..len {
+                    self.snake.body[i] = SnakeCell(tmp[i-1].0)
+                }
+        
+                if self.reward_cell == self.snake_head_idx() {
+                    self.reward_cell =  World::generate_reward_cell(self.size, &self.snake.body);
+                    self.snake.body.push(SnakeCell(self.snake.body[1].0));
+                }
             },
-            None => self.gen_next_snake_cell()
-        };
-
-        for i in 1..len {
-            self.snake.body[i] = SnakeCell(tmp[i-1].0)
+            _ => {}
         }
 
-        if self.reward_cell == self.snake_head_idx() {
-            if self.snake_length() < self.size {
-                self.reward_cell =  World::generate_reward_cell(self.size, &self.snake.body);
-            } else {
-                self.reward_cell =  1000;
-            }
-            self.snake.body.push(SnakeCell(self.snake.body[1].0));
-        }
     }
 
     fn gen_next_snake_cell(&self) -> SnakeCell {
@@ -145,12 +157,15 @@ impl World {
     }
 
     fn generate_reward_cell(max_val: usize, snake_body: &Vec<SnakeCell>) -> usize {
-        let mut reward_cell;
-        loop {
-            reward_cell = rnd(max_val);
-            if !snake_body.contains(&SnakeCell(reward_cell)) { break; }
+        if snake_body.len() < max_val {
+            let mut reward_cell;
+            loop {
+                reward_cell = rnd(max_val);
+                if !snake_body.contains(&SnakeCell(reward_cell)) { break; }
+            }
+            return reward_cell;
         }
-        reward_cell
+        max_val + 1
     }
 
     pub fn width(&self) -> usize {
