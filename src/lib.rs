@@ -9,6 +9,10 @@ static ALLOC: WeeAlloc = WeeAlloc::INIT;
 extern {
     fn now() -> usize;
 }
+#[wasm_bindgen(module = "/www/utils/rnd.js")]
+extern {
+    fn rnd(max: usize) -> usize;
+}
 
 #[wasm_bindgen]
 #[derive(PartialEq)]
@@ -19,7 +23,7 @@ pub enum Direction {
     Left
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq)]
 pub struct SnakeCell(usize);
 
 struct Snake {
@@ -54,11 +58,16 @@ pub struct World {
 impl World {
     pub fn new(width: usize, snake_idx: usize, snake_dir: Direction) -> World {
         let size = width * width;
-        let reward_cell = now() % size;
+        let snake = Snake::new(snake_idx, 3, snake_dir);
+        let mut reward_cell;
+        loop {
+            reward_cell = rnd(size);
+            if !snake.body.contains(&SnakeCell(reward_cell)) { break; }
+        }
         World {
             width,
             size,
-            snake: Snake::new(snake_idx, 3, snake_dir),
+            snake,
             next_cell: None,
             reward_cell,
         }
