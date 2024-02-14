@@ -21,7 +21,10 @@ init().then(wasm => {
     } else {
       location.reload();
     }
-  })
+  });
+
+  const gameStateLabel = document.getElementById("game-state");
+
 
   const canvas = <HTMLCanvasElement> document.getElementById("snake-canvas");
   const ctx = canvas.getContext("2d");
@@ -111,10 +114,15 @@ init().then(wasm => {
     ctx.stroke();
   }
 
+  function drawGameState() {
+    gameStateLabel.textContent = world.game_state_text();
+  }
+
   function paint() {
     drawWorld();
     drawSnake();  
     drawReward();
+    drawGameState();
   }
 
   function play() {

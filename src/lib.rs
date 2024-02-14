@@ -193,6 +193,15 @@ impl World {
         self.state
     }
 
+    pub fn game_state_text(&self) -> String {
+        match self.state {
+            Some(GameState::Won) => String::from("You have won!"),
+            Some(GameState::Lost) => String::from("You have lost!"),
+            Some(GameState::Playing) => String::from("You arer playing!"),
+            None => String::from("Start playing!"),
+        }
+    }
+
     pub fn change_snake_dir(&mut self, direction: Direction) {
         let next_cell = self.get_next_snake_cell(&direction);
         if self.snake.body[1].0 == next_cell.0 { return; }
