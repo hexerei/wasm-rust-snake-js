@@ -4,12 +4,18 @@ import { rnd } from "./utils/rnd";
 init().then(wasm => {
 
   const CELL_SIZE = 20;
-  const WORLD_WIDTH = 4;
+  const WORLD_WIDTH = 8;
   const SNAKE_DIR = Direction.Right;
   const snakeSpawnIdx = rnd(WORLD_WIDTH * WORLD_WIDTH);
 
   const world = World.new(WORLD_WIDTH, snakeSpawnIdx, SNAKE_DIR);
   const worldWidth = world.width();
+
+  const gameControlBtn = document.getElementById("game-control-btn");
+  gameControlBtn.addEventListener("click", _ => {
+    world.start_game();
+    play();
+  })
 
   const canvas = <HTMLCanvasElement> document.getElementById("snake-canvas");
   const ctx = canvas.getContext("2d");
@@ -79,12 +85,23 @@ init().then(wasm => {
     )
 
     ctx.beginPath();
+    let head_col: number = 0;
+    let head_row: number = 0;
+    ctx.fillStyle = "#555555";
     snakeCells.forEach( (cellIdx, i) => {
       const col = cellIdx % worldWidth;
       const row = Math.floor(cellIdx / worldWidth);
-      ctx.fillStyle = i < 1 ? "#7878db" : "#000000";
-      ctx.fillRect(col * CELL_SIZE, row * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+      if (i < 1) {
+        head_col = col;
+        head_row = row;
+      } else {
+        ctx.fillRect(col * CELL_SIZE, row * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+      }
     });
+    // draw head last so it is on top
+    ctx.fillStyle = "#7878db";
+    ctx.fillRect(head_col * CELL_SIZE, head_row * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+
     ctx.stroke();
   }
 
@@ -94,20 +111,17 @@ init().then(wasm => {
     drawReward();
   }
 
-  function update() {
+  function play() {
     const fps = 3;
     setTimeout(() => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       world.step();
       paint();
       // takes a callback to be invoked before next repaint
-      requestAnimationFrame(update);
+      requestAnimationFrame(play);
     }, 1000 / fps);
   }
 
   paint();
-  update();
-
-
 
 })

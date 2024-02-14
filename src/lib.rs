@@ -184,6 +184,10 @@ impl World {
         self.snake.body[0].0
     }
 
+    pub fn start_game(&mut self) {
+        self.state = Some(GameState::Playing)
+    }
+
     pub fn change_snake_dir(&mut self, direction: Direction) {
         let next_cell = self.get_next_snake_cell(&direction);
         if self.snake.body[1].0 == next_cell.0 { return; }
