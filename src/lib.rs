@@ -14,7 +14,7 @@ pub enum Direction {
     Left
 }
 
-#[derive(Clone)]
+#[derive(Clone, Copy)]
 pub struct SnakeCell(usize);
 
 struct Snake {
@@ -40,7 +40,9 @@ impl Snake {
 pub struct World {
     width: usize,
     size: usize,
-    snake: Snake
+    snake: Snake,
+    next_cell: Option<SnakeCell>,
+    reward_cell: usize
 }
 
 #[wasm_bindgen]
@@ -49,15 +51,22 @@ impl World {
         World {
             width,
             size: width * width,
-            snake: Snake::new(snake_idx, 3, snake_dir)
+            snake: Snake::new(snake_idx, 3, snake_dir),
+            next_cell: None,
+            reward_cell: 10,
         }
     }
 
     pub fn step(&mut self) {
         let tmp = self.snake.body.clone();
         let len = tmp.len();
-        let next_cell = self.gen_next_snake_cell();
-        self.snake.body[0] = next_cell;
+        self.snake.body[0] = match self.next_cell {
+            Some(cell) => {
+                self.next_cell = None;
+                cell
+            },
+            None => self.gen_next_snake_cell()
+        };
 
         for i in 1..len {
             self.snake.body[i] = SnakeCell(tmp[i-1].0)
@@ -65,6 +74,10 @@ impl World {
     }
 
     fn gen_next_snake_cell(&self) -> SnakeCell {
+        self.get_next_snake_cell(&self.snake.direction)
+    }
+
+    fn get_next_snake_cell(&self, direction: &Direction) -> SnakeCell {
         let snake_idx = self.snake_head_idx();
         let row = snake_idx / self.width;
         // modula is computational expensive
@@ -74,26 +87,38 @@ impl World {
         //     Direction::Up       => (snake_idx - self.width) % self.size,
         //     Direction::Down     => (snake_idx + self.width) % self.size,
         // };
-        let new_idx = match self.snake.direction {
+        let new_idx = match direction {
             Direction::Right    => {
                 let t = (row + 1) * self.width;
-                if snake_idx + 1 == t { t - self.width }
-                                 else { snake_idx + 1 }
+                if snake_idx + 1 == t {
+                    t - self.width
+                } else {
+                    snake_idx + 1
+                }
             },
             Direction::Left     => {
                 let t = row * self.width;
-                if snake_idx == t { t + (self.width - 1) }
-                             else { snake_idx - 1 }
+                if snake_idx == t {
+                    t + (self.width - 1)
+                } else {
+                    snake_idx - 1
+                }
             },
             Direction::Up       => {
                 let t = snake_idx - (row * self.width);
-                if snake_idx == t { (self.size - self.width) + t }
-                             else { snake_idx - self.width }
+                if snake_idx == t {
+                    (self.size - self.width) + t
+                } else {
+                    snake_idx - self.width
+                }
             },
             Direction::Down     => {
-                let t = snake_idx - ((self.width - row) * self.width);
-                if snake_idx + self.width == t { t - ((row + 1) * self.width) }
-                             else { snake_idx + self.width }
+                let t = snake_idx + ((self.width - row) * self.width);
+                if snake_idx + self.width == t {
+                    t - ((row + 1) * self.width)
+                } else {
+                    snake_idx + self.width
+                }
             },
         };
         SnakeCell(new_idx)
@@ -107,11 +132,18 @@ impl World {
         self.size
     }
 
+    pub fn get_reward_cell(&self) -> usize {
+        self.reward_cell
+    }
+
     pub fn snake_head_idx(&self) -> usize {
         self.snake.body[0].0
     }
 
     pub fn change_snake_dir(&mut self, direction: Direction) {
+        let next_cell = self.get_next_snake_cell(&direction);
+        if self.snake.body[1].0 == next_cell.0 { return; }
+        self.next_cell = Some(next_cell);
         self.snake.direction = direction;
     }
 
