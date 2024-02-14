@@ -59,7 +59,7 @@ pub struct World {
     size: usize,
     snake: Snake,
     next_cell: Option<SnakeCell>,
-    reward_cell: usize,
+    reward_cell: Option<usize>,
     state: Option<GameState>,
 }
 
@@ -99,9 +99,9 @@ impl World {
                 if self.snake.body[1..self.snake_length()].contains(&self.snake.body[0]) {
                     self.state = Some(GameState::Lost);
                 } else {
-                    if self.reward_cell == self.snake_head_idx() {
+                    if self.reward_cell == Some(self.snake_head_idx()) {
                         self.reward_cell =  World::generate_reward_cell(self.size, &self.snake.body);
-                        if self.reward_cell > 1000 {
+                        if self.reward_cell.is_none() {
                             self.state = Some(GameState::Won);
                         } else {
                             self.snake.body.push(SnakeCell(self.snake.body[1].0));
@@ -166,16 +166,16 @@ impl World {
         SnakeCell(new_idx)
     }
 
-    fn generate_reward_cell(max_val: usize, snake_body: &Vec<SnakeCell>) -> usize {
+    fn generate_reward_cell(max_val: usize, snake_body: &Vec<SnakeCell>) -> Option<usize> {
         if snake_body.len() < max_val {
             let mut reward_cell;
             loop {
                 reward_cell = rnd(max_val);
                 if !snake_body.contains(&SnakeCell(reward_cell)) { break; }
             }
-            return reward_cell;
+            return Some(reward_cell);
         }
-        max_val + 1000
+        None
     }
 
     pub fn width(&self) -> usize {
@@ -186,7 +186,7 @@ impl World {
         self.size
     }
 
-    pub fn get_reward_cell(&self) -> usize {
+    pub fn get_reward_cell(&self) -> Option<usize> {
         self.reward_cell
     }
 

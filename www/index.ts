@@ -4,7 +4,7 @@ import { rnd } from "./utils/rnd";
 init().then(wasm => {
 
   const CELL_SIZE = 20;
-  const WORLD_WIDTH = 3;
+  const WORLD_WIDTH = 4;
   const SNAKE_DIR = Direction.Right;
   const snakeSpawnIdx = rnd(WORLD_WIDTH * WORLD_WIDTH);
 
