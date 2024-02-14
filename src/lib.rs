@@ -95,11 +95,20 @@ impl World {
                 for i in 1..len {
                     self.snake.body[i] = SnakeCell(tmp[i-1].0)
                 }
-        
-                if self.reward_cell == self.snake_head_idx() {
-                    self.reward_cell =  World::generate_reward_cell(self.size, &self.snake.body);
-                    self.snake.body.push(SnakeCell(self.snake.body[1].0));
-                }
+
+                if self.snake.body[1..self.snake_length()].contains(&self.snake.body[0]) {
+                    self.state = Some(GameState::Lost);
+                } else {
+                    if self.reward_cell == self.snake_head_idx() {
+                        self.reward_cell =  World::generate_reward_cell(self.size, &self.snake.body);
+                        if self.reward_cell > 1000 {
+                            self.state = Some(GameState::Won);
+                        } else {
+                            self.snake.body.push(SnakeCell(self.snake.body[1].0));
+                        }
+                    }
+    
+                }        
             },
             _ => {}
         }
@@ -166,7 +175,7 @@ impl World {
             }
             return reward_cell;
         }
-        max_val + 1
+        max_val + 1000
     }
 
     pub fn width(&self) -> usize {
