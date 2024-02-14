@@ -13,8 +13,14 @@ init().then(wasm => {
 
   const gameControlBtn = document.getElementById("game-control-btn");
   gameControlBtn.addEventListener("click", _ => {
-    world.start_game();
-    play();
+    const gameState = world.game_state();
+    if (gameState === undefined) {
+      gameControlBtn.textContent = "Playing...";
+      world.start_game();
+      play();
+    } else {
+      location.reload();
+    }
   })
 
   const canvas = <HTMLCanvasElement> document.getElementById("snake-canvas");
